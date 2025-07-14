@@ -253,91 +253,124 @@ function App() {
                 </CollapsibleTrigger>
               </div>
               <CollapsibleContent className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">结果类型</label>
-                    <Select value={advancedOptions.res} onValueChange={(value) => 
-                      setAdvancedOptions(prev => ({ ...prev, res: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="merge">按类型合并 (推荐)</SelectItem>
-                        <SelectItem value="all">全部结果</SelectItem>
-                        <SelectItem value="results">仅结果列表</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">数据来源</label>
-                    <Select value={advancedOptions.src} onValueChange={(value) => 
-                      setAdvancedOptions(prev => ({ ...prev, src: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">全部来源</SelectItem>
-                        <SelectItem value="tg">仅Telegram</SelectItem>
-                        <SelectItem value="plugin">仅插件</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">搜索插件</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {pluginOptions.map(plugin => (
-                      <div key={plugin} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={plugin}
-                          checked={advancedOptions.plugins.includes(plugin)}
-                          onCheckedChange={(checked) => handlePluginChange(plugin, checked)}
+                {/* 网格布局美化高级选项 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 左侧列 */}
+                  <div className="space-y-4">
+                    {/* 结果类型分组 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">结果类型</h3>
+                      <Select 
+                        value={advancedOptions.res} 
+                        onValueChange={(value) => setAdvancedOptions(prev => ({ ...prev, res: value }))}
+                        className="w-full"
+                      >
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="选择结果类型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="merge">按类型合并 (默认)</SelectItem>
+                          <SelectItem value="all">全部结果</SelectItem>
+                          <SelectItem value="results">仅结果列表</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* 数据来源分组 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">数据来源</h3>
+                      <Select 
+                        value={advancedOptions.src} 
+                        onValueChange={(value) => setAdvancedOptions(prev => ({ ...prev, src: value }))}
+                        className="w-full"
+                      >
+                        <SelectTrigger className="bg-white">
+                          <SelectValue placeholder="选择数据来源" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">全部来源 (默认)</SelectItem>
+                          <SelectItem value="tg">仅Telegram</SelectItem>
+                          <SelectItem value="plugin">仅插件</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* 并发数量分组 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">并发数量</h3>
+                      <div className="flex items-center gap-3">
+                        <Input 
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={advancedOptions.conc}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value) || 10;
+                            setAdvancedOptions(prev => ({ 
+                              ...prev, 
+                              conc: Math.min(20, Math.max(1, value))
+                            }))
+                          }}
+                          className="flex-1 bg-white"
                         />
-                        <label htmlFor={plugin} className="text-sm">{plugin}</label>
+                        <span className="text-sm text-gray-500">(1-20)</span>
                       </div>
-                    ))}
+                    </div>
+                    
+                    {/* 强制刷新 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">缓存选项</h3>
+                      <div className="flex items-center space-x-2 bg-white p-3 rounded-md border">
+                        <Checkbox
+                          id="refresh"
+                          checked={advancedOptions.refresh}
+                          onCheckedChange={(checked) => 
+                            setAdvancedOptions(prev => ({ ...prev, refresh: checked }))}
+                        />
+                        <label htmlFor="refresh" className="text-sm">强制刷新 (不使用缓存)</label>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="refresh"
-                    checked={advancedOptions.refresh}
-                    onCheckedChange={(checked) => 
-                      setAdvancedOptions(prev => ({ ...prev, refresh: checked }))}
-                  />
-                  <label htmlFor="refresh" className="text-sm">强制刷新 (不使用缓存)</label>
-                </div>
-                
-                {/* 新增并发数量设置 */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">并发数量 (1-20)</label>
-                  <Input 
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={advancedOptions.conc}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 10;
-                      setAdvancedOptions(prev => ({ 
-                        ...prev, 
-                        conc: Math.min(20, Math.max(1, value))
-                      }))
-                    }}
-                  />
-                </div>
-                
-                {/* 新增自定义频道输入框 */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">自定义频道 (每行一个)</label>
-                  <textarea 
-                    value={advancedOptions.channels}
-                    onChange={(e) => setAdvancedOptions(prev => ({ ...prev, channels: e.target.value }))}
-                    rows={3}
-                    className="w-full px-3 py-2 border rounded-md text-sm"
-                    placeholder="输入Telegram频道名，每行一个"
-                  />
+                  
+                  {/* 右侧列 */}
+                  <div className="space-y-4">
+                    {/* 自定义频道 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">自定义频道</h3>
+                      <div className="bg-white p-4 rounded-md border">
+                        <textarea 
+                          value={advancedOptions.channels}
+                          onChange={(e) => setAdvancedOptions(prev => ({ ...prev, channels: e.target.value }))}
+                          rows={4}
+                          className="w-full px-3 py-2 text-sm border rounded-md"
+                          placeholder="输入Telegram频道名，每行一个"
+                        />
+                        <p className="mt-2 text-xs text-gray-500">
+                          例如：<br />
+                          @channel1<br />
+                          @channel2<br />
+                          @channel3
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* 搜索插件 */}
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">搜索插件</h3>
+                      <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-md border">
+                        {pluginOptions.map(plugin => (
+                          <div key={plugin} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={plugin}
+                              checked={advancedOptions.plugins.includes(plugin)}
+                              onCheckedChange={(checked) => handlePluginChange(plugin, checked)}
+                            />
+                            <label htmlFor={plugin} className="text-sm">{plugin}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
