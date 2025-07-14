@@ -242,14 +242,16 @@ function App() {
               </Button>
             </div>
 
-            {/* Advanced Options */}
+            {/* Advanced Options - 修改此处使按钮居中 */}
             <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" className="mb-4 flex justify-center items-center">
-                  <Settings className="w-4 h-4 mr-2" />
-                  🔧 高级选项
-                </Button>
-              </CollapsibleTrigger>
+              <div className="flex justify-center"> {/* 添加此div使按钮居中 */}
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="mb-4 flex justify-center items-center">
+                    <Settings className="w-4 h-4 mr-2" />
+                    🔧 高级选项
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
               <CollapsibleContent className="space-y-4 p-4 bg-gray-50 rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
