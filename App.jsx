@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Settings, Loader2, ExternalLink, Copy, Clock, Tag } from 'lucide-react'
+import { Search, Settings, Loader2, ExternalLink, Copy, Clock, Tag, File } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
@@ -100,14 +100,14 @@ function App() {
     },
     magnet: { 
       name: '磁力链接', 
-      icon: '🧲', 
+      icon: '🧲', // 磁力链接图标更新
       color: 'bg-gray-500', 
       textColor: 'text-gray-700',
       bgColor: 'bg-gray-50'
     },
     ed2k: { 
       name: '电驴链接', 
-      icon: '🔗', 
+      icon: '🔗', // 电驴链接图标更新
       color: 'bg-slate-500', 
       textColor: 'text-slate-700',
       bgColor: 'bg-slate-50'
@@ -124,6 +124,15 @@ function App() {
     }
   }
 
+  // 文件大小格式化函数
+  const formatSize = (bytes) => {
+    if (bytes === 0) return '未知大小'
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  }
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
@@ -134,14 +143,14 @@ function App() {
         refresh: advancedOptions.refresh.toString(),
         res: advancedOptions.res,
         src: advancedOptions.src,
-        plugins: advancedOptions.plugins.join(',')
+        plugins: advancedOptions.plugins.join(','),
+        conc: advancedOptions.conc.toString()  // 添加并发参数
       })
 
       const response = await fetch(`https://pansou.252035.xyz/api/search?${params}`)
       const data = await response.json()
       
       if (response.ok && data.code === 0) {
-        // API返回格式为 {code: 0, message: "success", data: {...}}
         setSearchResults(data.data)
       } else {
         console.error('搜索失败:', data.message)
@@ -296,6 +305,24 @@ function App() {
                   />
                   <label htmlFor="refresh" className="text-sm">强制刷新 (不使用缓存)</label>
                 </div>
+                
+                {/* 新增并发数量设置 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">并发数量 (1-20)</label>
+                  <Input 
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={advancedOptions.conc}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 10;
+                      setAdvancedOptions(prev => ({ 
+                        ...prev, 
+                        conc: Math.min(20, Math.max(1, value))
+                      }))
+                    }}
+                  />
+                </div>
               </CollapsibleContent>
             </Collapsible>
           </CardContent>
@@ -352,10 +379,15 @@ function App() {
                                   </Badge>
                                 </div>
                                 <h4 className="font-medium text-lg mb-2">{result.note || result.title || '未知资源'}</h4>
-                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
                                   <div className="flex items-center gap-1">
                                     <Clock className="w-4 h-4" />
                                     {formatDate(result.datetime)}
+                                  </div>
+                                  {/* 添加文件大小显示 */}
+                                  <div className="flex items-center gap-1">
+                                    <File className="w-4 h-4" />
+                                    {formatSize(result.size)}
                                   </div>
                                   {result.channel && (
                                     <div className="flex items-center gap-1">
@@ -482,6 +514,3 @@ function App() {
 }
 
 export default App
-
-
-
