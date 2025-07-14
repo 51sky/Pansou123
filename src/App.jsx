@@ -20,7 +20,8 @@ function App() {
     src: 'all',
     plugins: ['pansearch', 'qupansou', 'panta', 'pan666', 'hunhepan', 'jikepan'],
     refresh: false,
-    conc: 10
+    conc: 10,
+    channels: '' // 新增自定义频道字段
   })
 
   const pluginOptions = [
@@ -144,7 +145,8 @@ function App() {
         res: advancedOptions.res,
         src: advancedOptions.src,
         plugins: advancedOptions.plugins.join(','),
-        conc: advancedOptions.conc.toString()  // 添加并发参数
+        conc: advancedOptions.conc.toString(),
+        channel: advancedOptions.channels.split('\n').filter(Boolean).join(',') // 新增频道参数
       })
 
       const response = await fetch(`https://pansou.252035.xyz/api/search?${params}`)
@@ -243,7 +245,7 @@ function App() {
             {/* Advanced Options */}
             <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
               <CollapsibleTrigger asChild>
-                <Button variant="outline" className="mb-4">
+                <Button variant="outline" className="mb-4 flex justify-center items-center">
                   <Settings className="w-4 h-4 mr-2" />
                   🔧 高级选项
                 </Button>
@@ -321,6 +323,18 @@ function App() {
                         conc: Math.min(20, Math.max(1, value))
                       }))
                     }}
+                  />
+                </div>
+                
+                {/* 新增自定义频道输入框 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">自定义频道 (每行一个)</label>
+                  <textarea 
+                    value={advancedOptions.channels}
+                    onChange={(e) => setAdvancedOptions(prev => ({ ...prev, channels: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                    placeholder="输入Telegram频道名，每行一个"
                   />
                 </div>
               </CollapsibleContent>
