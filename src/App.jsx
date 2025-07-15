@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Settings, Loader2, ExternalLink, Copy, Clock, Tag, File } from 'lucide-react'
+import { Search, Settings, Loader2, ExternalLink, Copy, Clock, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
@@ -20,8 +20,7 @@ function App() {
     src: 'all',
     plugins: ['pansearch', 'qupansou', 'panta', 'pan666', 'hunhepan', 'jikepan'],
     refresh: false,
-    conc: 10,
-    channels: '' // 新增自定义频道字段
+    conc: 10
   })
 
   const pluginOptions = [
@@ -101,14 +100,14 @@ function App() {
     },
     magnet: { 
       name: '磁力链接', 
-      icon: '🧲', // 磁力链接图标更新
+      icon: '🧲', 
       color: 'bg-gray-500', 
       textColor: 'text-gray-700',
       bgColor: 'bg-gray-50'
     },
     ed2k: { 
       name: '电驴链接', 
-      icon: '🔗', // 电驴链接图标更新
+      icon: '🔗', 
       color: 'bg-slate-500', 
       textColor: 'text-slate-700',
       bgColor: 'bg-slate-50'
@@ -125,15 +124,6 @@ function App() {
     }
   }
 
-  // 文件大小格式化函数
-  const formatSize = (bytes) => {
-    if (bytes === 0) return '未知大小'
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
-  }
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
@@ -144,15 +134,14 @@ function App() {
         refresh: advancedOptions.refresh.toString(),
         res: advancedOptions.res,
         src: advancedOptions.src,
-        plugins: advancedOptions.plugins.join(','),
-        conc: advancedOptions.conc.toString(),
-        channel: advancedOptions.channels.split('\n').filter(Boolean).join(',') // 新增频道参数
+        plugins: advancedOptions.plugins.join(',')
       })
 
       const response = await fetch(`http://195.133.5.152:1234/api/search?${params}`)
       const data = await response.json()
       
       if (response.ok && data.code === 0) {
+        // API返回格式为 {code: 0, message: "success", data: {...}}
         setSearchResults(data.data)
       } else {
         console.error('搜索失败:', data.message)
@@ -242,129 +231,70 @@ function App() {
               </Button>
             </div>
 
-            {/* Advanced Options - 修改此处使按钮居中 */}
+            {/* Advanced Options */}
             <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-              <div className="flex justify-center"> {/* 添加此div使按钮居中 */}
-                <CollapsibleTrigger asChild>
-                  <Button variant="outline" className="mb-4 flex justify-center items-center">
-                    <Settings className="w-4 h-4 mr-2" />
-                    🔧 高级选项
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="mb-4">
+                  <Settings className="w-4 h-4 mr-2" />
+                  🔧 高级选项
+                </Button>
+              </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                {/* 网格布局美化高级选项 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* 左侧列 */}
-                  <div className="space-y-4">
-                    {/* 结果类型分组 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">结果类型</h3>
-                      <Select 
-                        value={advancedOptions.res} 
-                        onValueChange={(value) => setAdvancedOptions(prev => ({ ...prev, res: value }))}
-                        className="w-full"
-                      >
-                        <SelectTrigger className="bg-white">
-                          <SelectValue placeholder="选择结果类型" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="merge">按类型合并 (默认)</SelectItem>
-                          <SelectItem value="all">全部结果</SelectItem>
-                          <SelectItem value="results">仅结果列表</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* 数据来源分组 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">数据来源</h3>
-                      <Select 
-                        value={advancedOptions.src} 
-                        onValueChange={(value) => setAdvancedOptions(prev => ({ ...prev, src: value }))}
-                        className="w-full"
-                      >
-                        <SelectTrigger className="bg-white">
-                          <SelectValue placeholder="选择数据来源" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">全部来源 (默认)</SelectItem>
-                          <SelectItem value="tg">仅Telegram</SelectItem>
-                          <SelectItem value="plugin">仅插件</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* 并发数量分组 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">并发数量</h3>
-                      <div className="flex items-center gap-3">
-                        <Input 
-                          type="number"
-                          min="1"
-                          max="20"
-                          value={advancedOptions.conc}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value) || 10;
-                            setAdvancedOptions(prev => ({ 
-                              ...prev, 
-                              conc: Math.min(20, Math.max(1, value))
-                            }))
-                          }}
-                          className="flex-1 bg-white"
-                        />
-                        <span className="text-sm text-gray-500">(1-20)</span>
-                      </div>
-                    </div>
-                    
-                    {/* 强制刷新 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">缓存选项</h3>
-                      <div className="flex items-center space-x-2 bg-white p-3 rounded-md border">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">结果类型</label>
+                    <Select value={advancedOptions.res} onValueChange={(value) => 
+                      setAdvancedOptions(prev => ({ ...prev, res: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="merge">按类型合并 (推荐)</SelectItem>
+                        <SelectItem value="all">全部结果</SelectItem>
+                        <SelectItem value="results">仅结果列表</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">数据来源</label>
+                    <Select value={advancedOptions.src} onValueChange={(value) => 
+                      setAdvancedOptions(prev => ({ ...prev, src: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全部来源</SelectItem>
+                        <SelectItem value="tg">仅Telegram</SelectItem>
+                        <SelectItem value="plugin">仅插件</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">搜索插件</label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {pluginOptions.map(plugin => (
+                      <div key={plugin} className="flex items-center space-x-2">
                         <Checkbox
-                          id="refresh"
-                          checked={advancedOptions.refresh}
-                          onCheckedChange={(checked) => 
-                            setAdvancedOptions(prev => ({ ...prev, refresh: checked }))}
+                          id={plugin}
+                          checked={advancedOptions.plugins.includes(plugin)}
+                          onCheckedChange={(checked) => handlePluginChange(plugin, checked)}
                         />
-                        <label htmlFor="refresh" className="text-sm">强制刷新 (不使用缓存)</label>
+                        <label htmlFor={plugin} className="text-sm">{plugin}</label>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                  
-                  {/* 右侧列 */}
-                  <div className="space-y-4">
-                    {/* 自定义频道 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">自定义频道</h3>
-                      <div className="bg-white p-4 rounded-md border">
-                        <textarea 
-                          value={advancedOptions.channels}
-                          onChange={(e) => setAdvancedOptions(prev => ({ ...prev, channels: e.target.value }))}
-                          rows={4}
-                          className="w-full px-3 py-2 text-sm border rounded-md"
-                          placeholder="输入Telegram频道名，每行一个。例如：@channe"
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* 搜索插件 */}
-                    <div className="space-y-2">
-                      <h3 className="text-sm font-medium text-gray-700">搜索插件</h3>
-                      <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-md border">
-                        {pluginOptions.map(plugin => (
-                          <div key={plugin} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={plugin}
-                              checked={advancedOptions.plugins.includes(plugin)}
-                              onCheckedChange={(checked) => handlePluginChange(plugin, checked)}
-                            />
-                            <label htmlFor={plugin} className="text-sm">{plugin}</label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="refresh"
+                    checked={advancedOptions.refresh}
+                    onCheckedChange={(checked) => 
+                      setAdvancedOptions(prev => ({ ...prev, refresh: checked }))}
+                  />
+                  <label htmlFor="refresh" className="text-sm">强制刷新 (不使用缓存)</label>
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -422,15 +352,10 @@ function App() {
                                   </Badge>
                                 </div>
                                 <h4 className="font-medium text-lg mb-2">{result.note || result.title || '未知资源'}</h4>
-                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                                   <div className="flex items-center gap-1">
                                     <Clock className="w-4 h-4" />
                                     {formatDate(result.datetime)}
-                                  </div>
-                                  {/* 添加文件大小显示 */}
-                                  <div className="flex items-center gap-1">
-                                    <File className="w-4 h-4" />
-                                    {formatSize(result.size)}
                                   </div>
                                   {result.channel && (
                                     <div className="flex items-center gap-1">
@@ -557,3 +482,6 @@ function App() {
 }
 
 export default App
+
+
+
