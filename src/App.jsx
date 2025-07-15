@@ -149,7 +149,7 @@ function App() {
         channel: advancedOptions.channels.split('\n').filter(Boolean).join(',') // 新增频道参数
       })
 
-      const response = await fetch(`https://pansou.252035.xyz/api/search?${params}`)
+      const response = await fetch(`http://195.133.5.152:1234/api/search?${params}`)
       const data = await response.json()
       
       if (response.ok && data.code === 0) {
@@ -343,14 +343,8 @@ function App() {
                           onChange={(e) => setAdvancedOptions(prev => ({ ...prev, channels: e.target.value }))}
                           rows={4}
                           className="w-full px-3 py-2 text-sm border rounded-md"
-                          placeholder="输入Telegram频道名，每行一个"
+                          placeholder="输入Telegram频道名，每行一个。例如：@channe"
                         />
-                        <p className="mt-2 text-xs text-gray-500">
-                          例如：<br />
-                          @channel1<br />
-                          @channel2<br />
-                          @channel3
-                        </p>
                       </div>
                     </div>
                     
